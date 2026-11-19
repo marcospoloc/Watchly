@@ -13,6 +13,9 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "com.android.tools.build:gradle"
         update-types: ["version-update:semver-major"]
+      # AGP 8.x does not run on Gradle 9.6+, so Gradle majors wait for AGP 9.
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
