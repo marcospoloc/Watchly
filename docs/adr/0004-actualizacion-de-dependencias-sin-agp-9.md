@@ -28,3 +28,9 @@ Las versiones que se quedaron por detrás de la última disponible, y el motivo 
 - La app cumple el requisito actual de Google Play y todo el build (tests, ktlint, detekt, lint, R8) pasa con las nuevas versiones.
 - Dependabot agrupa las actualizaciones de Gradle en un único pull request semanal e ignora los saltos mayores de AGP. Si ese pull request falla en CI porque alguna versión exige AGP 9, se revisa junto con la migración en lugar de aceptarlo por partes.
 - La migración a AGP 9 queda como trabajo pendiente, y desbloquea el resto de la tabla en un solo paso.
+
+## Alertas de seguridad en dependencias de build
+
+Al enviar el grafo de dependencias a GitHub, Dependabot abrió 58 alertas (3 críticas, 24 altas, 26 medias, 5 bajas). Todas están en el classpath de los plugins de build: Netty, BouncyCastle, jdom2, jose4j, commons-compress y logback, que llegan a través de AGP 8.13 y del Kotlin Gradle Plugin 2.3. Ninguna de esas librerías está en `releaseRuntimeClasspath`, así que no se distribuyen en el APK.
+
+Se descartaron en GitHub como **riesgo tolerable**: solo se ejecutan al compilar, en la máquina de desarrollo y en el CI, y la del Kotlin Gradle Plugin no se puede parchear sin Kotlin 2.4.20, que Hilt 2.58 no admite. Se resuelven con la migración a AGP 9. Las alertas que aparezcan en dependencias de runtime de la app sí se tratan como bloqueantes.
