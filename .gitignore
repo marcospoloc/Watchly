@@ -1,0 +1,24 @@
+# Gradle / Kotlin
+.gradle/
+.kotlin/
+build/
+
+# IDE
+*.iml
+/.idea/
+/captures
+.externalNativeBuild
+.cxx
+
+# Local configuration and secrets
+/local.properties
+.env
+*.jks
+*.keystore
+google-services.json
+
+# OS
+.DS_Store
+
+# Local AI tooling
+.atl/
