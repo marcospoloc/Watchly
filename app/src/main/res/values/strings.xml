@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Watchly</string>
+
+    <!-- Search -->
+    <string name="search_label">Search TV shows</string>
+    <string name="search_placeholder">e.g. Breaking Bad</string>
+    <string name="search_clear">Clear search</string>
+    <string name="search_idle_title">Find your next show</string>
+    <string name="search_idle_body">Type a title to search thousands of TV shows.</string>
+    <string name="search_loading">Searching…</string>
+    <plurals name="search_results_count">
+        <item quantity="one">%d result</item>
+        <item quantity="other">%d results</item>
+    </plurals>
+    <string name="search_empty_title">No results</string>
+    <string name="search_empty_body">We couldn\'t find any show matching “%1$s”. Try another title.</string>
+
+    <!-- Show item -->
+    <string name="show_item_open_detail">open details</string>
+    <string name="show_rating_description">Rating %1$s out of 10</string>
+    <string name="show_no_rating">No rating</string>
+
+    <!-- Detail -->
+    <string name="detail_back">Back</string>
+    <string name="detail_poster_description">Poster of %1$s</string>
+    <string name="detail_loading">Loading show details…</string>
+    <string name="detail_section_info">Information</string>
+    <string name="detail_section_genres">Genres</string>
+    <string name="detail_section_summary">Summary</string>
+    <string name="detail_premiered">Premiered</string>
+    <string name="detail_language">Language</string>
+    <string name="detail_network">Network</string>
+    <string name="detail_status">Status</string>
+    <string name="detail_runtime">Runtime</string>
+    <string name="detail_rating">Rating</string>
+    <string name="detail_runtime_value">%1$d min</string>
+    <string name="detail_rating_value">%1$s / 10</string>
+    <string name="detail_unknown_value">Not available</string>
+    <string name="detail_no_summary">No summary available.</string>
+
+    <!-- Errors -->
+    <string name="error_title">Something went wrong</string>
+    <string name="error_network">Check your internet connection and try again.</string>
+    <string name="error_not_found">This show is no longer available.</string>
+    <string name="error_server">The service is having problems. Please try again later.</string>
+    <string name="error_unknown">An unexpected error occurred.</string>
+    <string name="action_retry">Retry</string>
+</resources>

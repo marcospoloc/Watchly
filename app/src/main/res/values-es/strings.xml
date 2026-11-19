@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Watchly</string>
+
+    <!-- Search -->
+    <string name="search_label">Buscar series</string>
+    <string name="search_placeholder">p. ej. Breaking Bad</string>
+    <string name="search_clear">Borrar búsqueda</string>
+    <string name="search_idle_title">Encuentra tu próxima serie</string>
+    <string name="search_idle_body">Escribe un título para buscar entre miles de series.</string>
+    <string name="search_loading">Buscando…</string>
+    <plurals name="search_results_count">
+        <item quantity="one">%d resultado</item>
+        <item quantity="many">%d resultados</item>
+        <item quantity="other">%d resultados</item>
+    </plurals>
+    <string name="search_empty_title">Sin resultados</string>
+    <string name="search_empty_body">No hemos encontrado ninguna serie que coincida con «%1$s». Prueba con otro título.</string>
+
+    <!-- Show item -->
+    <string name="show_item_open_detail">ver detalle</string>
+    <string name="show_rating_description">Valoración %1$s de 10</string>
+    <string name="show_no_rating">Sin valoración</string>
+
+    <!-- Detail -->
+    <string name="detail_back">Volver</string>
+    <string name="detail_poster_description">Póster de %1$s</string>
+    <string name="detail_loading">Cargando el detalle de la serie…</string>
+    <string name="detail_section_info">Información</string>
+    <string name="detail_section_genres">Géneros</string>
+    <string name="detail_section_summary">Sinopsis</string>
+    <string name="detail_premiered">Estreno</string>
+    <string name="detail_language">Idioma</string>
+    <string name="detail_network">Cadena</string>
+    <string name="detail_status">Estado</string>
+    <string name="detail_runtime">Duración</string>
+    <string name="detail_rating">Valoración</string>
+    <string name="detail_runtime_value">%1$d min</string>
+    <string name="detail_rating_value">%1$s / 10</string>
+    <string name="detail_unknown_value">No disponible</string>
+    <string name="detail_no_summary">No hay sinopsis disponible.</string>
+
+    <!-- Errors -->
+    <string name="error_title">Algo ha fallado</string>
+    <string name="error_network">Revisa tu conexión a internet y vuelve a intentarlo.</string>
+    <string name="error_not_found">Esta serie ya no está disponible.</string>
+    <string name="error_server">El servicio tiene problemas. Inténtalo de nuevo más tarde.</string>
+    <string name="error_unknown">Se ha producido un error inesperado.</string>
+    <string name="action_retry">Reintentar</string>
+</resources>
