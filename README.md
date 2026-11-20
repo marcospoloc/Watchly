@@ -120,12 +120,13 @@ _query
 
 ## Caché
 
-`InMemoryCache<K, V>(ttl, timeSource)` con TTL de 3 minutos (`DEFAULT_CACHE_TTL`).
+`InMemoryCache<K, V>(ttl, timeSource, maxEntries)` con TTL de 3 minutos (`DEFAULT_CACHE_TTL`) y un máximo de 100 entradas (`DEFAULT_MAX_CACHE_ENTRIES`).
 
 - **Cache-first.** Si hay un valor válido, se devuelve sin llamar a red. Si ha caducado o no existe, se pide a red, se guarda y se devuelve.
 - **Clave normalizada.** Se usa `trim().lowercase()`, así que "Lost" y " lost " comparten entrada.
 - **Los errores no se cachean.** El siguiente intento vuelve a la red.
 - **Tiempo inyectado (`kotlin.time.TimeSource`).** En producción se usa el reloj monotónico, que no se ve afectado si el usuario cambia la hora del dispositivo. En los tests se usa `TestTimeSource`, de modo que la expiración se prueba de forma determinista y sin `sleep`.
+- **Tamaño acotado.** Al llenarse, primero descarta las entradas caducadas y después la usada hace más tiempo (LRU). Así, las búsquedas que no se repiten no se quedan en memoria para siempre.
 - **Thread-safe** con `Mutex`.
 - **El detalle también se cachea por id.** Volver a abrir una serie no repite la petición.
 - **Límite conocido.** Dos búsquedas idénticas simultáneas con la caché vacía pueden hacer dos peticiones. Con el debounce y `distinctUntilChanged` no ocurre en la práctica, y deduplicarlas añadiría complejidad.
@@ -153,14 +154,14 @@ _query
 | Capa | Tests | Qué cubren |
 |---|---|---|
 | Domain (MockK) | `SearchShowsUseCaseTest`, `GetShowDetailUseCaseTest` | Delegación, normalización, que una query en blanco no llama al repositorio, completado de la última palabra a medias y propagación de errores |
-| Data | `InMemoryCacheTest` | Valor válido dentro del TTL, expiración en el límite exacto, claves independientes y renovación del TTL al sobrescribir |
+| Data | `InMemoryCacheTest` | Valor válido dentro del TTL, expiración en el límite exacto, claves independientes, renovación del TTL al sobrescribir y desalojo LRU que prioriza las caducadas |
 | Data | `ShowRepositoryImplTest` | Acierto de caché sin red, clave normalizada, expiración que vuelve a red y actualiza la caché, errores no cacheados, descarte de resultados poco relevantes y mapeo de 404/500/IO |
-| Data | `ShowMapperTest` | Campos nulos, HTML → texto plano, año y `webChannel` |
+| Data | `ShowMapperTest` | Campos nulos, HTML → texto plano, entidades escapadas decodificadas una sola vez, año y `webChannel` |
 | Presentation (Turbine) | `SearchViewModelTest` | Idle, debounce, **cancelación** (también durante el debounce y al borrar), vacío, reintento y borrado de la búsqueda |
 | Presentation | `DetailViewModelTest` | Lee el id de navegación, error y reintento |
 | Presentation (instrumentado) | `ShowListItemAccessibilityTest` | Semántica accesible |
 
-Hay 45 tests unitarios y 2 instrumentados.
+Hay 48 tests unitarios y 2 instrumentados.
 
 ## Stack
 

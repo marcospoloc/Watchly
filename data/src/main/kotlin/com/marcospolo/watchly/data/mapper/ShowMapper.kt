@@ -19,6 +19,12 @@ private val HTML_ENTITIES = mapOf(
 )
 
 /**
+ * Matches every known entity at once, so each one is replaced a single time:
+ * decoding them one by one would turn "&amp;lt;" into "&lt;" and then into "<".
+ */
+private val HTML_ENTITY = Regex(HTML_ENTITIES.keys.joinToString("|") { Regex.escape(it) })
+
+/**
  * TVMaze search is fuzzy: besides the real matches it returns shows that only
  * look similar ("breaking bad" also brings "Baking Mad"). Results scoring less
  * than this fraction of the best one are dropped as noise.
@@ -57,7 +63,5 @@ internal fun ShowDto.toShowDetail(): ShowDetail = ShowDetail(
 /** TVMaze summaries are HTML fragments; screen readers and Text need plain text. */
 internal fun String.toPlainText(): String {
     val withoutTags = replace(PARAGRAPH_BREAK, "\n\n").replace(HTML_TAG, "")
-    return HTML_ENTITIES.entries
-        .fold(withoutTags) { text, (entity, character) -> text.replace(entity, character) }
-        .trim()
+    return withoutTags.replace(HTML_ENTITY) { HTML_ENTITIES.getValue(it.value) }.trim()
 }
