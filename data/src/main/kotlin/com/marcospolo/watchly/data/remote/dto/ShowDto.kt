@@ -3,7 +3,11 @@ package com.marcospolo.watchly.data.remote.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class SearchResultDto(val show: ShowDto)
+internal data class SearchResultDto(
+    val show: ShowDto,
+    /** TVMaze's relevance of this result for the query; higher is better. */
+    val score: Double = 0.0
+)
 
 @Serializable
 internal data class ShowDto(

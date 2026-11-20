@@ -30,6 +30,12 @@ App Android para buscar series de TV y ver su detalle. Está hecha con Jetpack C
 
 El detalle muestra póster, géneros, valoración, fecha de estreno, cadena, idioma, estado, duración y sinopsis.
 
+La búsqueda de TVMaze compara palabras completas: mientras se escribe la última palabra ("breaking b", "game of thr") no devuelve nada o devuelve series que no tienen que ver. Si ningún resultado empieza por el texto escrito, `SearchShowsUseCase` busca otra vez sin la última palabra ("breaking") y muestra primero las series cuyo nombre empieza por el texto ("Breaking Bad"). Solo hace esa segunda petición cuando la primera no sirve.
+
+La búsqueda de TVMaze también es aproximada: "breaking bad" devuelve, además de las dos series que coinciden, otras que solo se parecen ("Talking Bad", "Baking Mad"). Cada resultado trae una puntuación de relevancia, y el repositorio descarta los que puntúan menos de la mitad que el mejor. Las búsquedas con resultados de puntuación parecida ("lost", "breaking") no cambian y se siguen tolerando las erratas ("breking bad").
+
+La búsqueda devuelve como máximo 10 resultados y no tiene paginación. Por eso, al completar "breaking ba" solo aparece lo que está entre los 10 primeros de "breaking": sale "Breaking Bad", pero no "Breaking Bad: Original Minisodes".
+
 ## Cómo ejecutarlo
 
 Requisitos: JDK 17 y el Android SDK (API 36). Android Studio es opcional.
@@ -143,15 +149,15 @@ _query
 
 | Capa | Tests | Qué cubren |
 |---|---|---|
-| Domain (MockK) | `SearchShowsUseCaseTest`, `GetShowDetailUseCaseTest` | Delegación, normalización, que una query en blanco no llama al repositorio y propagación de errores |
+| Domain (MockK) | `SearchShowsUseCaseTest`, `GetShowDetailUseCaseTest` | Delegación, normalización, que una query en blanco no llama al repositorio, completado de la última palabra a medias y propagación de errores |
 | Data | `InMemoryCacheTest` | Valor válido dentro del TTL, expiración en el límite exacto, claves independientes y renovación del TTL al sobrescribir |
-| Data | `ShowRepositoryImplTest` | Acierto de caché sin red, clave normalizada, expiración que vuelve a red y actualiza la caché, errores no cacheados y mapeo de 404/500/IO |
+| Data | `ShowRepositoryImplTest` | Acierto de caché sin red, clave normalizada, expiración que vuelve a red y actualiza la caché, errores no cacheados, descarte de resultados poco relevantes y mapeo de 404/500/IO |
 | Data | `ShowMapperTest` | Campos nulos, HTML → texto plano, año y `webChannel` |
 | Presentation (Turbine) | `SearchViewModelTest` | Idle, debounce, **cancelación** (también durante el debounce y al borrar), vacío, reintento y borrado de la búsqueda |
 | Presentation | `DetailViewModelTest` | Lee el id de navegación, error y reintento |
 | UI (instrumentado) | `ShowListItemAccessibilityTest` | Semántica accesible |
 
-Hay 35 tests unitarios y 2 instrumentados.
+Hay 45 tests unitarios y 2 instrumentados.
 
 ## Stack
 
