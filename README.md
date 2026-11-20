@@ -8,6 +8,8 @@
 
 App Android para buscar series de TV y ver su detalle. Está hecha con Jetpack Compose, Clean Architecture, corrutinas y Flow, y tiene una caché en memoria con expiración.
 
+`main` contiene la última versión publicada (ver [releases](https://github.com/marcospoloc/Watchly/releases)); el desarrollo está en [`develop`](https://github.com/marcospoloc/Watchly/tree/develop).
+
 <!--
 ## Capturas
 
@@ -42,7 +44,7 @@ Requisitos: JDK 17 y el Android SDK (API 36). Android Studio es opcional.
 ./gradlew assembleRelease            # build release con R8 (minificación y shrinking de recursos)
 ```
 
-El CI de GitHub Actions ejecuta lo mismo en cada push y pull request: `ktlintCheck detekt test assembleDebug assembleRelease lintDebug`. En cada push a `main` también envía el grafo de dependencias resuelto a GitHub, para que Dependabot avise de vulnerabilidades conocidas, incluidas las de dependencias transitivas.
+El CI de GitHub Actions ejecuta lo mismo en cada pull request y en cada push a `main` y `develop`: `ktlintCheck detekt test assembleDebug assembleRelease lintDebug`. En cada push a `main` también envía el grafo de dependencias resuelto a GitHub, para que Dependabot avise de vulnerabilidades conocidas, incluidas las de dependencias transitivas.
 
 Si no usas Android Studio, crea `local.properties` con `sdk.dir=/ruta/al/Android/sdk`.
 
@@ -83,6 +85,7 @@ flowchart LR
 | [0002](docs/adr/0002-cancelacion-de-busquedas-con-flatmaplatest.md) | Cancelación de búsquedas obsoletas con `flatMapLatest` |
 | [0003](docs/adr/0003-cache-en-memoria-y-errores-tipados.md) | Caché en memoria con TTL y errores tipados con `Outcome` |
 | [0004](docs/adr/0004-actualizacion-de-dependencias-sin-agp-9.md) | Actualización de dependencias sin migrar a AGP 9 |
+| [0005](docs/adr/0005-estrategia-de-ramas.md) | Estrategia de ramas: `main` para versiones publicadas y `develop` para el trabajo diario |
 
 ## Concurrencia y cancelación
 

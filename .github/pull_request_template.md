@@ -1,3 +1,8 @@
+<!--
+Base: `develop` (solo las releases y los hotfix van a `main`; ver CONTRIBUTING.md).
+El título del PR, en Conventional Commits, será el mensaje del commit fusionado.
+-->
+
 ## Qué cambia
 
 <!-- Describe el cambio y por qué es necesario. Enlaza el issue si existe. -->
