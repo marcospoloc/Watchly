@@ -1,5 +1,6 @@
 package com.marcospolo.watchly.data.mapper
 
+import com.marcospolo.watchly.data.remote.dto.SearchResultDto
 import com.marcospolo.watchly.data.remote.dto.ShowDto
 import com.marcospolo.watchly.domain.model.Show
 import com.marcospolo.watchly.domain.model.ShowDetail
@@ -16,6 +17,19 @@ private val HTML_ENTITIES = mapOf(
     "&gt;" to ">",
     "&nbsp;" to " "
 )
+
+/**
+ * TVMaze search is fuzzy: besides the real matches it returns shows that only
+ * look similar ("breaking bad" also brings "Baking Mad"). Results scoring less
+ * than this fraction of the best one are dropped as noise.
+ */
+private const val MIN_RELATIVE_SCORE = 0.5
+
+/** Maps search results to shows, keeping the API order and dropping low-relevance noise. */
+internal fun List<SearchResultDto>.toRelevantShows(): List<Show> {
+    val minScore = (maxOfOrNull { it.score } ?: 0.0) * MIN_RELATIVE_SCORE
+    return filter { it.score >= minScore }.map { it.show.toShow() }
+}
 
 internal fun ShowDto.toShow(): Show = Show(
     id = id,
