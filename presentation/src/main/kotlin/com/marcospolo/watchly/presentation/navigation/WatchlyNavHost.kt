@@ -20,7 +20,12 @@ fun WatchlyNavHost() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = SearchDestination) {
         composable<SearchDestination> {
-            SearchRoute(onShowClick = { show -> navController.navigate(DetailDestination(show.id)) })
+            SearchRoute(
+                onShowClick = { show ->
+                    // A second tap before the transition starts would otherwise stack an identical detail screen.
+                    navController.navigate(DetailDestination(show.id)) { launchSingleTop = true }
+                }
+            )
         }
         composable<DetailDestination> {
             DetailRoute(onBack = navController::navigateUp)
