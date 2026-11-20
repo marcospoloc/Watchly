@@ -116,6 +116,61 @@ class ShowRepositoryImplTest {
     }
 
     @Test
+    fun `given results far less relevant than the best when searched then keeps only the relevant ones`() = runTest {
+        coEvery { api.searchShows("breaking bad") } returns listOf(
+            SearchResultDto(ShowDto(id = 1, name = "Breaking Bad"), score = 1.18),
+            SearchResultDto(ShowDto(id = 2, name = "Breaking Bad: Original Minisodes"), score = 0.88),
+            SearchResultDto(ShowDto(id = 3, name = "Talking Bad"), score = 0.52),
+            SearchResultDto(ShowDto(id = 4, name = "Baking Mad"), score = 0.28)
+        )
+
+        val result = repository.searchShows("breaking bad")
+
+        assertEquals(Outcome.Success(listOf("Breaking Bad", "Breaking Bad: Original Minisodes")), result.names())
+    }
+
+    @Test
+    fun `given a result with exactly half the best score when searched then keeps it`() = runTest {
+        coEvery { api.searchShows("lost") } returns listOf(
+            SearchResultDto(ShowDto(id = 1, name = "Lost"), score = 0.8),
+            SearchResultDto(ShowDto(id = 2, name = "Lost Girl"), score = 0.4),
+            SearchResultDto(ShowDto(id = 3, name = "Lost in Space"), score = 0.39)
+        )
+
+        val result = repository.searchShows("lost")
+
+        assertEquals(Outcome.Success(listOf("Lost", "Lost Girl")), result.names())
+    }
+
+    @Test
+    fun `given results with similar scores when searched then keeps all of them in order`() = runTest {
+        coEvery { api.searchShows("breaking") } returns listOf(
+            SearchResultDto(ShowDto(id = 1, name = "Breaking Bad"), score = 0.68),
+            SearchResultDto(ShowDto(id = 2, name = "Breaking In"), score = 0.68),
+            SearchResultDto(ShowDto(id = 3, name = "Bangkok Breaking"), score = 0.66)
+        )
+
+        val result = repository.searchShows("breaking")
+
+        assertEquals(Outcome.Success(listOf("Breaking Bad", "Breaking In", "Bangkok Breaking")), result.names())
+    }
+
+    @Test
+    fun `given a filtered search when searched again within the ttl then returns the filtered list from the cache`() =
+        runTest {
+            coEvery { api.searchShows("breaking bad") } returns listOf(
+                SearchResultDto(ShowDto(id = 1, name = "Breaking Bad"), score = 1.0),
+                SearchResultDto(ShowDto(id = 4, name = "Baking Mad"), score = 0.2)
+            )
+
+            repository.searchShows("breaking bad")
+            val cached = repository.searchShows("breaking bad")
+
+            assertEquals(Outcome.Success(listOf("Breaking Bad")), cached.names())
+            coVerify(exactly = 1) { api.searchShows(any()) }
+        }
+
+    @Test
     fun `given a server error when requested then returns server error`() = runTest {
         coEvery { api.getShow(1) } throws httpError(500)
 

@@ -1,7 +1,7 @@
 package com.marcospolo.watchly.data.repository
 
 import com.marcospolo.watchly.data.cache.Cache
-import com.marcospolo.watchly.data.mapper.toShow
+import com.marcospolo.watchly.data.mapper.toRelevantShows
 import com.marcospolo.watchly.data.mapper.toShowDetail
 import com.marcospolo.watchly.data.remote.TvMazeApi
 import com.marcospolo.watchly.data.remote.safeApiCall
@@ -25,7 +25,7 @@ internal class ShowRepositoryImpl(
         val cacheKey = query.trim().lowercase()
         searchCache.get(cacheKey)?.let { cached -> return Outcome.Success(cached) }
 
-        return safeApiCall { api.searchShows(query).map { result -> result.show.toShow() } }
+        return safeApiCall { api.searchShows(query).toRelevantShows() }
             .onSuccess { shows -> searchCache.put(cacheKey, shows) }
     }
 

@@ -8,14 +8,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -27,7 +26,7 @@ import kotlinx.coroutines.flow.stateIn
 internal val SEARCH_DEBOUNCE = 300.milliseconds
 private const val STOP_TIMEOUT_MILLIS = 5_000L
 
-@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(private val searchShows: SearchShowsUseCase) : ViewModel() {
     private val _query = MutableStateFlow("")
@@ -39,12 +38,16 @@ class SearchViewModel @Inject constructor(private val searchShows: SearchShowsUs
     private val retryRequests = MutableStateFlow(0)
 
     /**
-     * `flatMapLatest` is what implements cancellation: when a new query arrives,
-     * the coroutine running the previous search (and its in-flight HTTP call)
-     * is cancelled, so results of an outdated query can never reach the UI.
+     * `flatMapLatest` is what implements cancellation: every change of the query
+     * cancels the coroutine of the previous search, whether it is still waiting
+     * for the debounce or running its HTTP call, so results of an outdated query
+     * can never reach the UI.
+     *
+     * The debounce lives inside [searchStates] on purpose. With `debounce()`
+     * before `flatMapLatest`, the previous search would keep running during the
+     * debounce window and could show its results next to the new query.
      */
     val uiState: StateFlow<SearchUiState> = _query
-        .debounce(SEARCH_DEBOUNCE)
         .map { it.trim() }
         .distinctUntilChanged()
         .combine(retryRequests) { query, _ -> query }
@@ -66,6 +69,8 @@ class SearchViewModel @Inject constructor(private val searchShows: SearchShowsUs
     private fun searchStates(query: String): Flow<SearchUiState> {
         if (query.isEmpty()) return flowOf(SearchUiState.Idle)
         return flow {
+            // Debounce: cancelled by flatMapLatest if the user keeps typing.
+            delay(SEARCH_DEBOUNCE)
             emit(SearchUiState.Loading)
             val state = when (val result = searchShows(query)) {
                 is Outcome.Success ->
