@@ -6,6 +6,8 @@ name: Branch policy
 on:
   pull_request:
     branches: [main]
+    # edited: also re-check when an existing pull request is retargeted to main.
+    types: [opened, synchronize, reopened, edited]
 
 permissions: {}
 
@@ -18,7 +20,13 @@ jobs:
       - name: Check source branch
         env:
           HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          REPO: ${{ github.repository }}
         run: |
+          if [ "$HEAD_REPO" != "$REPO" ]; then
+            echo "::error::Pull requests to main must come from this repository, not '$HEAD_REPO'."
+            exit 1
+          fi
           if [ "$HEAD_REF" = "develop" ] || [[ "$HEAD_REF" == hotfix/* ]]; then
             echo "Source branch '$HEAD_REF' is allowed to target main."
           else

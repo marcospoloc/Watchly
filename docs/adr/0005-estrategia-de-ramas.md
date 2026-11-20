@@ -26,7 +26,7 @@ Usar un Git Flow simplificado, con las reglas aplicadas por GitHub (rulesets y c
 - **Rulesets** (sin bypass):
   - `develop`: solo por PR, CI obligatorio con la rama al día, sin force-push ni borrado. Admite squash (cambios normales) y merge commit (solo para traer un hotfix desde `main`).
   - `main`: solo por PR con merge commit, checks obligatorios `Build, test and lint` y `Release source branch`, sin force-push ni borrado.
-- **Check `Release source branch`** (`.github/workflows/branch-policy.yml`): falla si un PR a `main` no viene de `develop` ni de `hotfix/*`. Los rulesets no pueden limitar la rama de origen de un PR.
+- **Check `Release source branch`** (`.github/workflows/branch-policy.yml`): falla si un PR a `main` no viene de `develop` ni de `hotfix/*` de este mismo repositorio (no de un fork). Se vuelve a ejecutar si se cambia la base de un PR existente a `main`. Los rulesets no pueden limitar la rama de origen de un PR.
 
 ## Por qué
 
@@ -42,5 +42,5 @@ Usar un Git Flow simplificado, con las reglas aplicadas por GitHub (rulesets y c
 - Cada cambio se integra dos veces (en `develop` y al publicar) y cada hotfix necesita un PR de vuelta a `develop`. `CONTRIBUTING.md` documenta los pasos.
 - Las actualizaciones de seguridad de Dependabot siempre apuntan a la rama por defecto (`main`), y el check de origen las bloquea. Se aplican como hotfix o se integran en `develop` y salen en la siguiente release.
 - El grafo de dependencias se envía solo desde `main`, así que las alertas de seguridad corresponden a lo publicado.
-- Los merge commits de #3 y #4 ya estaban en `main` y no se reescriben. El estado de `main` al adoptar esta decisión se publica como `v1.0.0`.
+- Los merge commits de los PRs #3 (versiones compatibles con AGP 8) y #4 (OkHttp 4.12.1), fusionados antes de esta decisión, se quedan en `main`: reescribir una rama publicada rompería clones y enlaces. El estado de `main` al adoptar esta decisión se publica como `v1.0.0`.
 - Si entran más desarrolladores o la app se publica en Google Play con fases de prueba, se valorará añadir ramas `release/*` y aprobaciones obligatorias en un ADR nuevo.

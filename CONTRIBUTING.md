@@ -40,9 +40,10 @@ Si cambias la UI, ejecuta también `./gradlew connectedDebugAndroidTest` con un 
 
 **Hotfix**
 
-1. Crea `hotfix/X.Y.Z` desde `main`, abre el PR contra `main` y fusiona con merge commit.
-2. Crea el tag y la release como en una release normal.
-3. Abre un PR `main` → `develop` y fusiónalo con merge commit, para que la corrección no se pierda en la siguiente release.
+1. Crea `hotfix/X.Y.Z` desde `main`, corrige el error y sube `versionName` y `versionCode` en `app/build.gradle.kts`.
+2. Abre el PR contra `main` y fusiona con merge commit.
+3. Crea el tag y la release como en una release normal.
+4. Abre un PR `main` → `develop` y fusiónalo con merge commit, para que la corrección no se pierda en la siguiente release.
 
 ## Convenciones
 
