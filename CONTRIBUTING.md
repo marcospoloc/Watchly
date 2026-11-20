@@ -35,7 +35,7 @@ Si cambias la UI, ejecuta también `./gradlew connectedDebugAndroidTest` con un 
    git switch main && git pull
    git tag -a vX.Y.Z -m "Watchly X.Y.Z"
    git push origin vX.Y.Z
-   gh release create vX.Y.Z --generate-notes
+   gh release create vX.Y.Z --title "Watchly X.Y.Z" --generate-notes
    ```
 
 **Hotfix**
