@@ -1,6 +1,6 @@
 # Instrucciones para agentes de IA
 
-Normas para cualquier asistente de IA que trabaje en Watchly. Complementan a [CONTRIBUTING.md](CONTRIBUTING.md) y a los [ADR](docs/adr/), que siguen siendo la fuente de verdad: si algo cambia allí, actualiza también este archivo.
+Normas para cualquier asistente de IA que trabaje en Watchly. Este archivo recoge lo específico de la IA; las convenciones del proyecto están en [CONTRIBUTING.md](CONTRIBUTING.md) y las decisiones en los [ADR](docs/adr/), que son la fuente de verdad.
 
 ## Reglas que no se negocian
 
@@ -31,37 +31,6 @@ Ejecuta lo mismo que el CI y comprueba que pasa:
 - Si cambias dependencias, red o serialización, comprueba que `app/build/outputs/mapping/release/missing_rules.txt` está vacío: R8 está activo en release.
 - Informa de lo que no hayas podido ejecutar; no lo des por bueno.
 
-## Idiomas
+## Convenciones de idioma, arquitectura, código y tests
 
-| Qué | Idioma |
-|---|---|
-| Código, comentarios y KDoc | Inglés |
-| Commits, ramas y títulos de PR | Inglés |
-| README, CONTRIBUTING, ADR, descripciones de PR y este archivo | Español |
-| Textos visibles de la app | `strings.xml` en inglés (`values/`) y en español (`values-es/`); nunca texto fijo en el código |
-
-## Arquitectura
-
-- Módulos `:app → :domain ← :data` ([ADR 0001](docs/adr/0001-modulos-domain-y-data-en-kotlin-puro.md)). `:domain` y `:data` son Kotlin puro: sin Android ni anotaciones de Hilt.
-- `:app` es la raíz de composición: los objetos de `:domain` y `:data` se construyen en `di/AppModule.kt` con `@Provides`.
-- `:data` solo expone lo necesario: implementaciones, API, DTOs y mappers son `internal`. El punto de entrada público es `createShowRepository()` en `ShowRepositoryFactory.kt`.
-- Si cambias una decisión de arquitectura, añade o actualiza un ADR en `docs/adr/` y su fila en la tabla del README.
-
-## Convenciones de código
-
-El estilo lo imponen ktlint (`.editorconfig`: estilo `android_studio`, 120 columnas) y detekt (`config/detekt/detekt.yml`). Además:
-
-- **Nombres por capa:** `XxxUseCase` con `operator fun invoke`, `XxxRepository` (interfaz en `:domain`) y `XxxRepositoryImpl` (en `:data`), `XxxDto` para red, mappers como funciones de extensión `toXxx()`, `XxxViewModel`, `XxxUiState` y `XxxScreen`.
-- **Errores:** las operaciones que pueden fallar devuelven `Outcome<T>` con un `DomainError`; no se propagan excepciones fuera de `:data` ([ADR 0003](docs/adr/0003-cache-en-memoria-y-errores-tipados.md)). La UI traduce cada `DomainError` a un texto con `DomainError.messageRes()`.
-- **Estado de la UI:** un `sealed interface XxxUiState` con un caso por estado posible (`Loading`, `Success`, `Empty`, `Error`…). El ViewModel lo expone como `StateFlow` de solo lectura y recibe eventos con funciones `onXxx()`.
-- **Corrutinas:** búsquedas y peticiones que pueden quedar obsoletas se cancelan con `flatMapLatest` ([ADR 0002](docs/adr/0002-cancelacion-de-busquedas-con-flatmaplatest.md)). El tiempo se inyecta con `kotlin.time.TimeSource`, nunca se lee del reloj del sistema.
-- **Accesibilidad:** cada componente interactivo tiene semántica correcta (rol, `contentDescription`, `heading`, `liveRegion` para cambios de estado). Comprueba los cambios con un test de semántica en `androidTest`.
-- **Comentarios:** KDoc para explicar el porqué, no el qué.
-
-## Tests
-
-- Todo cambio de comportamiento lleva su test; un bug, un test que lo reproduzca antes de corregirlo.
-- JUnit 4 con nombres en formato `` `given … when … then …` ``.
-- Corrutinas con `runTest`; flows con Turbine (`.test { }`); dobles de prueba con MockK; tiempo con `TestTimeSource`; dispatcher principal con `MainDispatcherRule`.
-- Sin `Thread.sleep` ni esperas reales: los tests deben ser deterministas.
-- Si cambia el número de tests, actualiza la sección "Tests" del README.
+Están en [CONTRIBUTING.md](CONTRIBUTING.md#convenciones) y son obligatorias. Léelas antes de escribir código, commits o documentación.

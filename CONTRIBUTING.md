@@ -47,7 +47,41 @@ Si cambias la UI, ejecuta también `./gradlew connectedDebugAndroidTest` con un 
 
 ## Convenciones
 
-- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/), por ejemplo `feat(search): add pagination` o `fix(data): handle empty genres`. Cada commit compila y lleva sus tests.
-- **Arquitectura:** respeta la dirección `:app → :domain ← :data`. `:domain` y `:data` no dependen de Android ni de Hilt (ver [ADR 0001](docs/adr/0001-modulos-domain-y-data-en-kotlin-puro.md)).
-- **Decisiones:** si cambias una decisión de arquitectura, añade o actualiza un ADR en `docs/adr/`.
-- **Textos:** todo texto visible va en `strings.xml`, en inglés (por defecto) y en español.
+### Commits y decisiones
+
+- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/) en inglés y en imperativo, por ejemplo `feat(search): add pagination` o `fix(data): handle empty genres`. Cada commit compila y lleva sus tests.
+- **Decisiones:** si cambias una decisión de arquitectura, añade o actualiza un ADR en `docs/adr/` y su fila en la tabla del README.
+
+### Idiomas
+
+| Qué | Idioma |
+|---|---|
+| Código, comentarios y KDoc | Inglés |
+| Commits, nombres de rama y títulos de PR | Inglés |
+| README, CONTRIBUTING, ADR, `AGENTS.md` y descripciones de PR | Español |
+| Textos visibles de la app | `strings.xml` en inglés (`values/`, por defecto) y en español (`values-es/`); nunca texto fijo en el código |
+
+### Arquitectura
+
+- Respeta la dirección `:app → :domain ← :data`. `:domain` y `:data` son Kotlin puro: no dependen de Android ni de Hilt ([ADR 0001](docs/adr/0001-modulos-domain-y-data-en-kotlin-puro.md)).
+- `:app` es la raíz de composición: los objetos de `:domain` y `:data` se crean en `di/AppModule.kt` con `@Provides`.
+- `:data` solo expone lo necesario. Implementaciones, API, DTOs y mappers son `internal`; el punto de entrada público es `createShowRepository()` en `ShowRepositoryFactory.kt`.
+
+### Código
+
+El estilo lo imponen ktlint (`.editorconfig`: estilo `android_studio`, 120 columnas) y detekt (`config/detekt/detekt.yml`). Además:
+
+- **Nombres por capa:** `XxxUseCase` con `operator fun invoke`, `XxxRepository` (interfaz en `:domain`) y `XxxRepositoryImpl` (en `:data`), `XxxDto` para red, mappers como funciones de extensión `toXxx()`, `XxxViewModel`, `XxxUiState` y `XxxScreen`.
+- **Errores:** las operaciones que pueden fallar devuelven `Outcome<T>` con un `DomainError`; las excepciones no salen de `:data` ([ADR 0003](docs/adr/0003-cache-en-memoria-y-errores-tipados.md)). La UI traduce cada `DomainError` a un texto con `DomainError.messageRes()`.
+- **Estado de la UI:** un `sealed interface XxxUiState` con un caso por estado posible (`Loading`, `Success`, `Empty`, `Error`…). El ViewModel lo expone como `StateFlow` de solo lectura y recibe los eventos con funciones `onXxx()`.
+- **Corrutinas:** las búsquedas y peticiones que pueden quedar obsoletas se cancelan con `flatMapLatest` ([ADR 0002](docs/adr/0002-cancelacion-de-busquedas-con-flatmaplatest.md)). El tiempo se inyecta con `kotlin.time.TimeSource`; no se lee el reloj del sistema.
+- **Accesibilidad:** cada componente interactivo tiene la semántica correcta (rol, `contentDescription`, `heading`, `liveRegion` para cambios de estado) y un test de semántica en `androidTest`.
+- **Comentarios:** KDoc para explicar el porqué, no el qué.
+
+### Tests
+
+- Todo cambio de comportamiento lleva su test; un bug, un test que lo reproduzca antes de corregirlo.
+- JUnit 4, con nombres en formato `` `given … when … then …` ``.
+- Corrutinas con `runTest`, flows con Turbine (`.test { }`), dobles de prueba con MockK, tiempo con `TestTimeSource` y dispatcher principal con `MainDispatcherRule`.
+- Sin `Thread.sleep` ni esperas reales: los tests son deterministas.
+- Si cambia el número de tests, actualiza la sección "Tests" del README.
