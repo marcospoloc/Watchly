@@ -34,6 +34,8 @@ La búsqueda de TVMaze compara palabras completas: mientras se escribe la últim
 
 La búsqueda de TVMaze también es aproximada: "breaking bad" devuelve, además de las dos series que coinciden, otras que solo se parecen ("Talking Bad", "Baking Mad"). Cada resultado trae una puntuación de relevancia, y el repositorio descarta los que puntúan menos de la mitad que el mejor. Las búsquedas con resultados de puntuación parecida ("lost", "breaking") no cambian y se siguen tolerando las erratas ("breking bad").
 
+La búsqueda devuelve como máximo 10 resultados y no tiene paginación. Por eso, al completar "breaking ba" solo aparece lo que está entre los 10 primeros de "breaking": sale "Breaking Bad", pero no "Breaking Bad: Original Minisodes".
+
 ## Cómo ejecutarlo
 
 Requisitos: JDK 17 y el Android SDK (API 36). Android Studio es opcional.
