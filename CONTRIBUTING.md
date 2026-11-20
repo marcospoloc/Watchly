@@ -59,11 +59,12 @@ Si cambias la UI, ejecuta también `./gradlew connectedDebugAndroidTest` con un 
 | Código, comentarios y KDoc | Inglés |
 | Commits, nombres de rama y títulos de PR | Inglés |
 | README, CONTRIBUTING, ADR, `AGENTS.md` y descripciones de PR | Español |
-| Textos visibles de la app | `strings.xml` en inglés (`values/`, por defecto) y en español (`values-es/`); nunca texto fijo en el código |
+| Textos visibles de la app | `strings.xml` de `:presentation` en inglés (`values/`, por defecto) y en español (`values-es/`); nunca texto fijo en el código |
 
 ### Arquitectura
 
-- Respeta la dirección `:app → :domain ← :data`. `:domain` y `:data` son Kotlin puro: no dependen de Android ni de Hilt ([ADR 0001](docs/adr/0001-modulos-domain-y-data-en-kotlin-puro.md)).
+- Respeta la dirección `:app → :presentation → :domain ← :data`. `:domain` y `:data` son Kotlin puro: no dependen de Android ni de Hilt ([ADR 0001](docs/adr/0001-modulos-domain-y-data-en-kotlin-puro.md)).
+- La UI (pantallas, ViewModels, navegación, tema y textos) va en `:presentation`, que solo depende de `:domain` ([ADR 0006](docs/adr/0006-modulo-presentation.md)).
 - `:app` es la raíz de composición: los objetos de `:domain` y `:data` se crean en `di/AppModule.kt` con `@Provides`.
 - `:data` solo expone lo necesario. Implementaciones, API, DTOs y mappers son `internal`; el punto de entrada público es `createShowRepository()` en `ShowRepositoryFactory.kt`.
 
