@@ -10,7 +10,7 @@ Al volver de un detalle o repetir una búsqueda, la app no debería volver a ped
 ## Decisión
 
 **Caché**
-- Interfaz `Cache<K, V>` con una implementación `InMemoryCache` (TTL de 3 minutos, `DEFAULT_CACHE_TTL`), protegida con `Mutex`.
+- Interfaz `Cache<K, V>` con una implementación `InMemoryCache` (TTL de 3 minutos, `DEFAULT_CACHE_TTL`, y como mucho 100 entradas con desalojo LRU), protegida con `Mutex`.
 - El tiempo se inyecta como `kotlin.time.TimeSource`: el reloj monotónico en producción y `TestTimeSource` en los tests.
 - `ShowRepositoryImpl` es *cache-first*. La clave de búsqueda se normaliza con `trim().lowercase()` y el detalle se cachea por id. Los errores no se cachean.
 - El repositorio es `@Singleton` en `AppModule`, así que la caché vive lo que vive el proceso.
