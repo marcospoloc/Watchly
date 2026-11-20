@@ -9,6 +9,7 @@ import com.marcospolo.watchly.presentation.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -186,6 +187,29 @@ class SearchViewModelTest {
         }
         assertEquals("", viewModel.query.value)
     }
+
+    @Test
+    fun `given results when the screen resubscribes after the stop timeout then keeps them without searching again`() =
+        runTest {
+            coEvery { searchShows("lost") } returns Outcome.Success(listOf(lost))
+
+            viewModel.uiState.test {
+                awaitItem()
+                viewModel.onQueryChange("lost")
+                assertEquals(SearchUiState.Loading, awaitItem())
+                assertEquals(SearchUiState.Success(listOf(lost)), awaitItem())
+            }
+
+            // The user reads a detail screen long enough for a WhileSubscribed upstream to stop.
+            advanceTimeBy(10.seconds)
+
+            viewModel.uiState.test {
+                assertEquals(SearchUiState.Success(listOf(lost)), awaitItem())
+                advanceTimeBy(SEARCH_DEBOUNCE * 2)
+                expectNoEvents()
+            }
+            coVerify(exactly = 1) { searchShows("lost") }
+        }
 
     private companion object {
         const val SLOW_NETWORK_MILLIS = 1_000L

@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.stateIn
 
 /** Wait for the user to pause typing before searching; also keeps us under TVMaze's rate limit. */
 internal val SEARCH_DEBOUNCE = 300.milliseconds
-private const val STOP_TIMEOUT_MILLIS = 5_000L
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -46,13 +45,17 @@ class SearchViewModel @Inject constructor(private val searchShows: SearchShowsUs
      * The debounce lives inside [searchStates] on purpose. With `debounce()`
      * before `flatMapLatest`, the previous search would keep running during the
      * debounce window and could show its results next to the new query.
+     *
+     * Shared `Lazily` rather than `WhileSubscribed`: the search screen stops
+     * collecting while a detail is open, and restarting the upstream on return
+     * would run the search again, flash the skeleton and reset the list scroll.
      */
     val uiState: StateFlow<SearchUiState> = _query
         .map { it.trim() }
         .distinctUntilChanged()
         .combine(retryRequests) { query, _ -> query }
         .flatMapLatest(::searchStates)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), SearchUiState.Idle)
+        .stateIn(viewModelScope, SharingStarted.Lazily, SearchUiState.Idle)
 
     fun onQueryChange(newQuery: String) {
         _query.value = newQuery

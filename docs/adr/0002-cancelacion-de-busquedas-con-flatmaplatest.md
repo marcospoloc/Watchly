@@ -17,7 +17,7 @@ _query
     .distinctUntilChanged()
     .combine(retryRequests) { query, _ -> query }
     .flatMapLatest(::searchStates)
-    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SearchUiState.Idle)
+    .stateIn(viewModelScope, SharingStarted.Lazily, SearchUiState.Idle)
 ```
 
 `searchStates(query)` devuelve `Idle` al instante si la query está vacía; si no, espera `SEARCH_DEBOUNCE` (300 ms) con `delay`, emite `Loading` y después el resultado.
@@ -31,6 +31,7 @@ _query
 
 - Es imposible mostrar resultados de una búsqueda obsoleta. Lo cubren tests de `SearchViewModelTest`, que fallan si se sustituye `flatMapLatest` por `flatMapConcat` o si se vuelve a poner el debounce delante.
 - Borrar el campo vuelve a `Idle` al momento, sin esperar el debounce.
+- El estado se comparte con `SharingStarted.Lazily`: mientras hay un detalle abierto la pantalla de búsqueda deja de recoger, y con `WhileSubscribed` el pipeline se reiniciaba al volver, repetía la búsqueda, mostraba otra vez el esqueleto y la lista volvía arriba. La contrapartida es que una petición en curso termina aunque la app pase a segundo plano.
 - El reintento también espera los 300 ms del debounce, y volver a una query que se acababa de abandonar ("lost" → "lo" → "lost") lanza otra búsqueda; la caché en memoria responde sin red si la primera había terminado.
 - El debounce y `distinctUntilChanged` reducen las peticiones y mantienen la app dentro del límite de TVMaze.
 - Usa `flatMapLatest`, marcada como experimental en coroutines (`ExperimentalCoroutinesApi`), declarada explícitamente con `@OptIn`.
