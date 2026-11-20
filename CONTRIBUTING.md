@@ -59,11 +59,12 @@ Si cambias la UI, ejecuta también `./gradlew connectedDebugAndroidTest` con un 
 | Código, comentarios y KDoc | Inglés |
 | Commits, nombres de rama y títulos de PR | Inglés |
 | README, CONTRIBUTING, ADR, `AGENTS.md` y descripciones de PR | Español |
-| Textos visibles de la app | `strings.xml` en inglés (`values/`, por defecto) y en español (`values-es/`); nunca texto fijo en el código |
+| Textos visibles de la app | `strings.xml` de `:presentation` en inglés (`values/`, por defecto) y en español (`values-es/`); nunca texto fijo en el código |
 
 ### Arquitectura
 
-- Respeta la dirección `:app → :domain ← :data`. `:domain` y `:data` son Kotlin puro: no dependen de Android ni de Hilt ([ADR 0001](docs/adr/0001-modulos-domain-y-data-en-kotlin-puro.md)).
+- Respeta la dirección `:app → :presentation → :domain ← :data`. `:domain` y `:data` son Kotlin puro: no dependen de Android ni de Hilt ([ADR 0001](docs/adr/0001-modulos-domain-y-data-en-kotlin-puro.md)).
+- La UI (pantallas, ViewModels, navegación, tema y textos) va en `:presentation`, que solo depende de `:domain` ([ADR 0006](docs/adr/0006-modulo-presentation.md)).
 - `:app` es la raíz de composición: los objetos de `:domain` y `:data` se crean en `di/AppModule.kt` con `@Provides`.
 - `:data` solo expone lo necesario. Implementaciones, API, DTOs y mappers son `internal`; el punto de entrada público es `createShowRepository()` en `ShowRepositoryFactory.kt`.
 
@@ -71,11 +72,11 @@ Si cambias la UI, ejecuta también `./gradlew connectedDebugAndroidTest` con un 
 
 El estilo lo imponen ktlint (`.editorconfig`: estilo `android_studio`, 120 columnas) y detekt (`config/detekt/detekt.yml`). Además:
 
-- **Nombres por capa:** `XxxUseCase` con `operator fun invoke`, `XxxRepository` (interfaz en `:domain`) y `XxxRepositoryImpl` (en `:data`), `XxxDto` para red, mappers como funciones de extensión `toXxx()`, `XxxViewModel`, `XxxUiState` y `XxxScreen`.
+- **Nombres por capa:** `XxxUseCase` con `operator fun invoke`, `XxxRepository` (interfaz en `:domain`) y `XxxRepositoryImpl` (en `:data`), `XxxDto` para red, mappers como funciones de extensión `toXxx()`, `XxxViewModel`, `XxxUiState` y `XxxScreen` (en `:presentation`).
 - **Errores:** las operaciones que pueden fallar devuelven `Outcome<T>` con un `DomainError`; las excepciones no salen de `:data` ([ADR 0003](docs/adr/0003-cache-en-memoria-y-errores-tipados.md)). La UI traduce cada `DomainError` a un texto con `DomainError.messageRes()`.
 - **Estado de la UI:** un `sealed interface XxxUiState` con un caso por estado posible (`Loading`, `Success`, `Empty`, `Error`…). El ViewModel lo expone como `StateFlow` de solo lectura y recibe los eventos con funciones `onXxx()`.
 - **Corrutinas:** las búsquedas y peticiones que pueden quedar obsoletas se cancelan con `flatMapLatest` ([ADR 0002](docs/adr/0002-cancelacion-de-busquedas-con-flatmaplatest.md)). El tiempo se inyecta con `kotlin.time.TimeSource`; no se lee el reloj del sistema.
-- **Accesibilidad:** cada componente interactivo tiene la semántica correcta (rol, `contentDescription`, `heading`, `liveRegion` para cambios de estado) y un test de semántica en `androidTest`.
+- **Accesibilidad:** cada componente interactivo tiene la semántica correcta (rol, `contentDescription`, `heading`, `liveRegion` para cambios de estado) y un test de semántica en `presentation/src/androidTest`.
 - **Comentarios:** KDoc para explicar el porqué, no el qué.
 
 ### Tests

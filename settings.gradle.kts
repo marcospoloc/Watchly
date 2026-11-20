@@ -25,3 +25,4 @@ rootProject.name = "Watchly"
 include(":app")
 include(":domain")
 include(":data")
+include(":presentation")

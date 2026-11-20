@@ -43,7 +43,7 @@ Requisitos: JDK 17 y el Android SDK (API 36). Android Studio es opcional.
 ```bash
 ./gradlew assembleDebug              # compilar el APK
 ./gradlew installDebug               # instalar en un emulador o dispositivo conectado
-./gradlew test                       # tests unitarios (domain, data, app)
+./gradlew test                       # tests unitarios (domain, data, presentation)
 ./gradlew connectedDebugAndroidTest  # tests de accesibilidad en Compose (necesita emulador)
 ./gradlew ktlintCheck detekt         # estilo y análisis estático
 ./gradlew lintDebug                  # Android Lint
@@ -56,26 +56,28 @@ Si no usas Android Studio, crea `local.properties` con `sdk.dir=/ruta/al/Android
 
 ## Arquitectura
 
-Es Clean Architecture con tres módulos Gradle y MVVM con flujo unidireccional (UDF) en la capa de presentación.
+Es Clean Architecture con cuatro módulos Gradle y MVVM con flujo unidireccional (UDF) en la capa de presentación.
 
 ```mermaid
 flowchart LR
-    app[":app<br/>Presentation + DI"] --> domain[":domain<br/>Kotlin puro"]
+    app[":app<br/>DI"] --> presentation[":presentation<br/>Android"]
+    presentation --> domain[":domain<br/>Kotlin puro"]
     data[":data<br/>Kotlin puro"] --> domain
     app --> data
 ```
 
-`:app` depende de `:data` solo para llamar a `createShowRepository(...)` en el *composition root*; todo lo demás de `:data` es `internal`.
+`:presentation` solo depende de `:domain`, así que la UI no puede usar `:data`. `:app` depende de `:data` solo para llamar a `createShowRepository(...)` en el *composition root*; todo lo demás de `:data` es `internal`.
 
 | Módulo | Tipo | Contenido |
 |---|---|---|
 | `:domain` | Kotlin/JVM puro | Modelos (`Show`, `ShowDetail`), contrato `ShowRepository`, casos de uso, `Outcome` y `DomainError` |
 | `:data` | Kotlin/JVM puro | API Retrofit, DTOs, mappers, `InMemoryCache` y `ShowRepositoryImpl` |
-| `:app` | Android | ViewModels, pantallas Compose, navegación, theme y módulo Hilt |
+| `:presentation` | Android library | ViewModels, pantallas Compose, navegación, tema y textos (inglés y español) |
+| `:app` | Android app | `Application`, `MainActivity`, módulo Hilt, manifest, icono, R8 y firma |
 
 ### Por qué estas decisiones
 
-- **Módulos Gradle en vez de paquetes.** El compilador garantiza la regla de dependencia: `:domain` no puede importar Retrofit ni Android porque no están en su classpath. Además, los tests de `:domain` y `:data` son JVM puros y rápidos.
+- **Módulos Gradle en vez de paquetes.** El compilador garantiza la regla de dependencia: `:domain` no puede importar Retrofit ni Android, y `:presentation` no puede importar `:data`, porque no están en su classpath. Además, los tests de `:domain` y `:data` son JVM puros y rápidos.
 - **Domain y data sin framework.** Ninguno de los dos depende de Hilt. Todo se ensambla en `app/di/AppModule.kt`, que hace de *composition root*. `:data` solo expone `createShowRepository(...)`; la API, los DTOs y la implementación son `internal`.
 - **Inversión de dependencias.** `ShowRepository` lo define el dominio y lo implementa data.
 - **Casos de uso aunque sean finos.** Son el único sitio donde viven las reglas de negocio: normalizar la query y no llamar a red si la query está en blanco.
@@ -92,6 +94,7 @@ flowchart LR
 | [0003](docs/adr/0003-cache-en-memoria-y-errores-tipados.md) | Caché en memoria con TTL y errores tipados con `Outcome` |
 | [0004](docs/adr/0004-actualizacion-de-dependencias-sin-agp-9.md) | Actualización de dependencias sin migrar a AGP 9 |
 | [0005](docs/adr/0005-estrategia-de-ramas.md) | Estrategia de ramas: `main` para versiones publicadas y `develop` para el trabajo diario |
+| [0006](docs/adr/0006-modulo-presentation.md) | Módulo `:presentation` separado de `:app` |
 
 ## Concurrencia y cancelación
 
@@ -143,7 +146,7 @@ _query
 - **Géneros como etiquetas no interactivas.** Un `Chip` se anunciaría como un botón que no hace nada.
 - **Textos en `strings.xml`** en inglés (por defecto) y en español, con plurales.
 - **Layout adaptativo.** Una columna en móvil y cuadrícula en pantallas anchas. El contenido del detalle tiene un ancho máximo para que se lea bien.
-- **Tests de semántica en Compose** (`androidTest`): el ítem es un botón con etiqueta de acción y el título es un encabezado.
+- **Tests de semántica en Compose** (`presentation/src/androidTest`): el ítem es un botón con etiqueta de acción y el título es un encabezado.
 
 ## Tests
 
@@ -155,7 +158,7 @@ _query
 | Data | `ShowMapperTest` | Campos nulos, HTML → texto plano, año y `webChannel` |
 | Presentation (Turbine) | `SearchViewModelTest` | Idle, debounce, **cancelación** (también durante el debounce y al borrar), vacío, reintento y borrado de la búsqueda |
 | Presentation | `DetailViewModelTest` | Lee el id de navegación, error y reintento |
-| UI (instrumentado) | `ShowListItemAccessibilityTest` | Semántica accesible |
+| Presentation (instrumentado) | `ShowListItemAccessibilityTest` | Semántica accesible |
 
 Hay 45 tests unitarios y 2 instrumentados.
 
