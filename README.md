@@ -101,12 +101,12 @@ flowchart LR
 `SearchViewModel`:
 
 ```kotlin
-_query
+query // StateFlow leído de SavedStateHandle: sobrevive a la muerte del proceso
     .map { it.trim() }
     .distinctUntilChanged()         // "lost" y "lost " no lanzan otra búsqueda
     .combine(retryRequests) { q, _ -> q }
     .flatMapLatest(::searchStates)  // cada cambio cancela la búsqueda anterior
-    .stateIn(viewModelScope, WhileSubscribed(5_000), Idle)
+    .stateIn(viewModelScope, Lazily, Idle) // volver de un detalle no repite la búsqueda
 
 // searchStates(query): Idle al instante si está vacía; si no,
 // delay(SEARCH_DEBOUNCE) (300 ms) → Loading → resultado
@@ -157,11 +157,11 @@ _query
 | Data | `InMemoryCacheTest` | Valor válido dentro del TTL, expiración en el límite exacto, claves independientes, renovación del TTL al sobrescribir y desalojo LRU que prioriza las caducadas |
 | Data | `ShowRepositoryImplTest` | Acierto de caché sin red, clave normalizada, expiración que vuelve a red y actualiza la caché, errores no cacheados, descarte de resultados poco relevantes y mapeo de 404/500/IO |
 | Data | `ShowMapperTest` | Campos nulos, HTML → texto plano, entidades escapadas decodificadas una sola vez, año y `webChannel` |
-| Presentation (Turbine) | `SearchViewModelTest` | Idle, debounce, **cancelación** (también durante el debounce y al borrar), vacío, reintento y borrado de la búsqueda |
+| Presentation (Turbine) | `SearchViewModelTest` | Idle, debounce, **cancelación** (también durante el debounce y al borrar), vacío, reintento, borrado de la búsqueda, resultados conservados al volver de un detalle y búsqueda restaurada tras la muerte del proceso |
 | Presentation | `DetailViewModelTest` | Lee el id de navegación, error y reintento |
 | Presentation (instrumentado) | `ShowListItemAccessibilityTest` | Semántica accesible |
 
-Hay 48 tests unitarios y 2 instrumentados.
+Hay 51 tests unitarios y 2 instrumentados.
 
 ## Stack
 
