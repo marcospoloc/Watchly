@@ -93,18 +93,21 @@ flowchart LR
 
 ```kotlin
 _query
-    .debounce(SEARCH_DEBOUNCE)      // 300 ms: espera a que el usuario deje de escribir
     .map { it.trim() }
     .distinctUntilChanged()         // "lost" y "lost " no lanzan otra búsqueda
     .combine(retryRequests) { q, _ -> q }
-    .flatMapLatest(::searchStates)  // cancela la búsqueda anterior
+    .flatMapLatest(::searchStates)  // cada cambio cancela la búsqueda anterior
     .stateIn(viewModelScope, WhileSubscribed(5_000), Idle)
+
+// searchStates(query): Idle al instante si está vacía; si no,
+// delay(SEARCH_DEBOUNCE) (300 ms) → Loading → resultado
 ```
 
-- **`flatMapLatest`** cancela la corrutina de la búsqueda anterior en cuanto llega una query nueva. Las funciones `suspend` de Retrofit son cancelables, así que la petición HTTP en curso también se cancela y es imposible que lleguen a la UI resultados de una búsqueda vieja.
+- **`flatMapLatest`** cancela la corrutina de la búsqueda anterior en cuanto cambia el texto. Las funciones `suspend` de Retrofit son cancelables, así que la petición HTTP en curso también se cancela y es imposible que lleguen a la UI resultados de una búsqueda vieja.
+- **El debounce va dentro de `flatMapLatest`**, como un `delay` antes de buscar. Si fuera un `debounce()` antes de `flatMapLatest`, la búsqueda anterior seguiría viva durante esos 300 ms y, si respondía entonces, sus resultados aparecerían junto al texto nuevo. Borrar el campo vuelve a `Idle` al instante.
 - **`CancellationException` nunca se captura.** `safeApiCall` la vuelve a lanzar. Si se tragara, una búsqueda cancelada se convertiría en un error falso y se rompería la concurrencia estructurada.
 - **El debounce** reduce las peticiones y nos mantiene dentro del límite de TVMaze (20 peticiones cada 10 s).
-- **El test** `SearchViewModelTest` comprueba que una búsqueda lenta ("lost") se cancela cuando llega "house" y que solo se emite el resultado de "house". Si se sustituye `flatMapLatest` por `flatMapConcat`, el test falla.
+- **Los tests** de `SearchViewModelTest` comprueban que una búsqueda lenta ("lost") se cancela cuando llega "house" y solo se emite "house", que una respuesta que llega durante el debounce de la query nueva tampoco se muestra, y que borrar el campo durante una búsqueda vuelve a `Idle` al momento. Si se sustituye `flatMapLatest` por `flatMapConcat`, o se vuelve a poner el debounce delante, fallan.
 
 ## Caché
 
@@ -144,11 +147,11 @@ _query
 | Data | `InMemoryCacheTest` | Valor válido dentro del TTL, expiración en el límite exacto, claves independientes y renovación del TTL al sobrescribir |
 | Data | `ShowRepositoryImplTest` | Acierto de caché sin red, clave normalizada, expiración que vuelve a red y actualiza la caché, errores no cacheados y mapeo de 404/500/IO |
 | Data | `ShowMapperTest` | Campos nulos, HTML → texto plano, año y `webChannel` |
-| Presentation (Turbine) | `SearchViewModelTest` | Idle, debounce, **cancelación**, vacío, reintento y borrado de la búsqueda |
+| Presentation (Turbine) | `SearchViewModelTest` | Idle, debounce, **cancelación** (también durante el debounce y al borrar), vacío, reintento y borrado de la búsqueda |
 | Presentation | `DetailViewModelTest` | Lee el id de navegación, error y reintento |
 | UI (instrumentado) | `ShowListItemAccessibilityTest` | Semántica accesible |
 
-Hay 33 tests unitarios y 2 instrumentados.
+Hay 35 tests unitarios y 2 instrumentados.
 
 ## Stack
 
