@@ -58,6 +58,13 @@ class ShowMapperTest {
     }
 
     @Test
+    fun `given escaped entities in a summary when mapped then each entity is decoded only once`() {
+        val dto = ShowDto(id = 4, name = "Markup", summary = "<p>Use &amp;lt;b&amp;gt; for &quot;bold&quot;</p>")
+
+        assertEquals("Use &lt;b&gt; for \"bold\"", dto.toShowDetail().summary)
+    }
+
+    @Test
     fun `given a detail dto when mapped then prefers the original image and the network name`() {
         val detail = fullDto.toShowDetail()
 
