@@ -17,7 +17,7 @@ El título del PR, en Conventional Commits, será el mensaje del commit fusionad
 
 ## Checklist
 
-- [ ] `./gradlew ktlintCheck detekt test lintDebug` pasa en local
+- [ ] `./gradlew ktlintCheck detekt test assembleDebug assembleRelease lintDebug` pasa en local
 - [ ] He añadido o actualizado tests para el comportamiento que cambia
 - [ ] He actualizado el README o un ADR si cambia una decisión de arquitectura
 - [ ] Los textos nuevos están en `strings.xml` en inglés y en español

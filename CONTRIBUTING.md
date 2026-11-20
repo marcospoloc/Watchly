@@ -72,11 +72,11 @@ Si cambias la UI, ejecuta también `./gradlew connectedDebugAndroidTest` con un 
 
 El estilo lo imponen ktlint (`.editorconfig`: estilo `android_studio`, 120 columnas) y detekt (`config/detekt/detekt.yml`). Además:
 
-- **Nombres por capa:** `XxxUseCase` con `operator fun invoke`, `XxxRepository` (interfaz en `:domain`) y `XxxRepositoryImpl` (en `:data`), `XxxDto` para red, mappers como funciones de extensión `toXxx()`, `XxxViewModel`, `XxxUiState` y `XxxScreen`.
+- **Nombres por capa:** `XxxUseCase` con `operator fun invoke`, `XxxRepository` (interfaz en `:domain`) y `XxxRepositoryImpl` (en `:data`), `XxxDto` para red, mappers como funciones de extensión `toXxx()`, `XxxViewModel`, `XxxUiState` y `XxxScreen` (en `:presentation`).
 - **Errores:** las operaciones que pueden fallar devuelven `Outcome<T>` con un `DomainError`; las excepciones no salen de `:data` ([ADR 0003](docs/adr/0003-cache-en-memoria-y-errores-tipados.md)). La UI traduce cada `DomainError` a un texto con `DomainError.messageRes()`.
 - **Estado de la UI:** un `sealed interface XxxUiState` con un caso por estado posible (`Loading`, `Success`, `Empty`, `Error`…). El ViewModel lo expone como `StateFlow` de solo lectura y recibe los eventos con funciones `onXxx()`.
 - **Corrutinas:** las búsquedas y peticiones que pueden quedar obsoletas se cancelan con `flatMapLatest` ([ADR 0002](docs/adr/0002-cancelacion-de-busquedas-con-flatmaplatest.md)). El tiempo se inyecta con `kotlin.time.TimeSource`; no se lee el reloj del sistema.
-- **Accesibilidad:** cada componente interactivo tiene la semántica correcta (rol, `contentDescription`, `heading`, `liveRegion` para cambios de estado) y un test de semántica en `androidTest`.
+- **Accesibilidad:** cada componente interactivo tiene la semántica correcta (rol, `contentDescription`, `heading`, `liveRegion` para cambios de estado) y un test de semántica en `presentation/src/androidTest`.
 - **Comentarios:** KDoc para explicar el porqué, no el qué.
 
 ### Tests
