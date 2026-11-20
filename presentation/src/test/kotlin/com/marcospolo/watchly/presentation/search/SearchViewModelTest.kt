@@ -1,5 +1,6 @@
 package com.marcospolo.watchly.presentation.search
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.marcospolo.watchly.domain.model.DomainError
 import com.marcospolo.watchly.domain.model.Outcome
@@ -26,7 +27,8 @@ class SearchViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val searchShows: SearchShowsUseCase = mockk()
-    private val viewModel by lazy { SearchViewModel(searchShows) }
+    private val savedStateHandle = SavedStateHandle()
+    private val viewModel by lazy { SearchViewModel(savedStateHandle, searchShows) }
 
     private val lost = Show(1, "Lost", null, 2004, listOf("Drama"), 8.3)
     private val house = Show(2, "House", null, 2004, listOf("Drama", "Medical"), 8.6)
@@ -210,6 +212,28 @@ class SearchViewModelTest {
             }
             coVerify(exactly = 1) { searchShows("lost") }
         }
+
+    @Test
+    fun `given a query saved before process death when recreated then restores the query and searches it`() = runTest {
+        coEvery { searchShows("lost") } returns Outcome.Success(listOf(lost))
+        val restored = SearchViewModel(SavedStateHandle(mapOf("query" to "lost")), searchShows)
+
+        assertEquals("lost", restored.query.value)
+        restored.uiState.test {
+            assertEquals(SearchUiState.Loading, awaitItem())
+            assertEquals(SearchUiState.Success(listOf(lost)), awaitItem())
+        }
+        coVerify(exactly = 1) { searchShows("lost") }
+    }
+
+    @Test
+    fun `given a typed query when changed or cleared then it is kept in the saved state`() {
+        viewModel.onQueryChange("lost")
+        assertEquals("lost", savedStateHandle.get<String>("query"))
+
+        viewModel.onClearQuery()
+        assertEquals("", savedStateHandle.get<String>("query"))
+    }
 
     private companion object {
         const val SLOW_NETWORK_MILLIS = 1_000L

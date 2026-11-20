@@ -12,7 +12,7 @@ La búsqueda se lanza mientras el usuario escribe. Si una petición lenta ("lost
 `SearchViewModel` construye su estado a partir del texto de búsqueda con un único pipeline de `Flow`:
 
 ```kotlin
-_query
+query // getStateFlow(QUERY_KEY) del SavedStateHandle
     .map { it.trim() }
     .distinctUntilChanged()
     .combine(retryRequests) { query, _ -> query }
