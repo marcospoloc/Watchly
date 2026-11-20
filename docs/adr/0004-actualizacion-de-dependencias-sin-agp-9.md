@@ -20,14 +20,14 @@ Las versiones que se quedaron por detrás de la última disponible, y el motivo 
 | Hilt | 2.58 | Hilt 2.59+ exige AGP 9 |
 | Kotlin / KSP | 2.3.21 / 2.3.14 | Hilt 2.58 solo lee metadata de Kotlin hasta la versión 2.3 |
 | kotlinx-serialization | 1.11.0 | La 1.12 y posteriores están compiladas con Kotlin 2.4 |
-| OkHttp | 4.12.0 | OkHttp 5 es una versión mayor con cambios de API; se migrará de forma explícita |
+| OkHttp | 4.12.1 | OkHttp 5 es una versión mayor con cambios de API; se migrará de forma explícita |
 | Coil | 2.7.0 | Coil 3 cambia de paquete (`io.coil-kt.coil3`) |
 
 ## Consecuencias
 
 - La app cumple el requisito actual de Google Play y todo el build (tests, ktlint, detekt, lint, R8) pasa con las nuevas versiones.
 - Dependabot agrupa las actualizaciones de Gradle en un único pull request semanal. En `.github/dependabot.yml` se ignoran explícitamente las versiones de esta tabla que exigen AGP 9 o Kotlin 2.4, además de los saltos mayores de AGP, Gradle, OkHttp y Coil, para que ese pull request solo contenga versiones compatibles y pueda pasar el CI. Al migrar a AGP 9 hay que retirar esos `ignore`.
-- Sí están en la última versión disponible, tras comprobar su compatibilidad: activity-compose 1.13.0, kotlinx-coroutines 1.11.0 (compilada con Kotlin 2.2) y Retrofit 3.0.0 (sigue usando OkHttp 4.12.0).
+- Sí están en la última versión disponible, tras comprobar su compatibilidad: activity-compose 1.13.0, kotlinx-coroutines 1.11.0 (compilada con Kotlin 2.2) y Retrofit 3.0.0 (compatible con OkHttp 4.x).
 - La migración a AGP 9 queda como trabajo pendiente, y desbloquea el resto de la tabla en un solo paso.
 
 ## Alertas de seguridad en dependencias de build
