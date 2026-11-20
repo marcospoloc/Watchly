@@ -62,4 +62,34 @@ class InMemoryCacheTest {
 
         assertEquals("new", cache.get("lost"))
     }
+
+    @Test
+    fun `given a full cache when a new key is stored then evicts the least recently used entry`() = runTest {
+        val small = InMemoryCache<String, String>(ttl = 3.minutes, timeSource = timeSource, maxEntries = 2)
+        small.put("lost", "a")
+        small.put("house", "b")
+        small.get("lost")
+
+        small.put("dark", "c")
+
+        assertEquals("a", small.get("lost"))
+        assertNull(small.get("house"))
+        assertEquals("c", small.get("dark"))
+    }
+
+    @Test
+    fun `given a full cache with an expired entry when a new key is stored then drops the expired one`() = runTest {
+        val small = InMemoryCache<String, String>(ttl = 3.minutes, timeSource = timeSource, maxEntries = 2)
+        small.put("lost", "a")
+        timeSource += 2.minutes
+        small.put("house", "b")
+        small.get("lost")
+        timeSource += 2.minutes
+
+        small.put("dark", "c")
+
+        assertNull(small.get("lost"))
+        assertEquals("b", small.get("house"))
+        assertEquals("c", small.get("dark"))
+    }
 }
