@@ -43,7 +43,7 @@ Requisitos: JDK 17 y el Android SDK (API 36). Android Studio es opcional.
 ```bash
 ./gradlew assembleDebug              # compilar el APK
 ./gradlew installDebug               # instalar en un emulador o dispositivo conectado
-./gradlew test                       # tests unitarios (domain, data, app)
+./gradlew test                       # tests unitarios (domain, data, presentation)
 ./gradlew connectedDebugAndroidTest  # tests de accesibilidad en Compose (necesita emulador)
 ./gradlew ktlintCheck detekt         # estilo y análisis estático
 ./gradlew lintDebug                  # Android Lint
@@ -146,7 +146,7 @@ _query
 - **Géneros como etiquetas no interactivas.** Un `Chip` se anunciaría como un botón que no hace nada.
 - **Textos en `strings.xml`** en inglés (por defecto) y en español, con plurales.
 - **Layout adaptativo.** Una columna en móvil y cuadrícula en pantallas anchas. El contenido del detalle tiene un ancho máximo para que se lea bien.
-- **Tests de semántica en Compose** (`androidTest`): el ítem es un botón con etiqueta de acción y el título es un encabezado.
+- **Tests de semántica en Compose** (`presentation/src/androidTest`): el ítem es un botón con etiqueta de acción y el título es un encabezado.
 
 ## Tests
 
@@ -158,7 +158,7 @@ _query
 | Data | `ShowMapperTest` | Campos nulos, HTML → texto plano, año y `webChannel` |
 | Presentation (Turbine) | `SearchViewModelTest` | Idle, debounce, **cancelación** (también durante el debounce y al borrar), vacío, reintento y borrado de la búsqueda |
 | Presentation | `DetailViewModelTest` | Lee el id de navegación, error y reintento |
-| UI (instrumentado) | `ShowListItemAccessibilityTest` | Semántica accesible |
+| Presentation (instrumentado) | `ShowListItemAccessibilityTest` | Semántica accesible |
 
 Hay 45 tests unitarios y 2 instrumentados.
 

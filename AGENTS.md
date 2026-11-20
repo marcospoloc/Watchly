@@ -28,7 +28,7 @@ Ejecuta lo mismo que el CI y comprueba que pasa:
 
 - Si falla el estilo, usa `./gradlew ktlintFormat` y revisa que solo cambie formato.
 - Si cambias la UI, ejecuta también `./gradlew connectedDebugAndroidTest` con un emulador.
-- Si cambias dependencias, red o serialización, comprueba que `app/build/outputs/mapping/release/missing_rules.txt` está vacío: R8 está activo en release.
+- Si cambias dependencias, red o serialización, comprueba que `app/build/outputs/mapping/release/missing_rules.txt` no existe o está vacío: R8 está activo en release y solo lo crea si faltan reglas.
 - Informa de lo que no hayas podido ejecutar; no lo des por bueno.
 
 ## Convenciones de idioma, arquitectura, código y tests
