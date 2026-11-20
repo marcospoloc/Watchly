@@ -35,7 +35,6 @@ android {
         // A library has no targetSdk: without this the test APK targets minSdk and Android
         // covers the test activity with a "built for an older version" dialog.
         targetSdk = 36
-        unitTests.isReturnDefaultValues = true
     }
 }
 
