@@ -1,0 +1,27 @@
+name: Branch policy
+
+# main only receives releases from develop and hotfixes (see docs/adr/0005).
+# Rulesets cannot restrict the source branch of a pull request, so this
+# required check does it.
+on:
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  release-source:
+    name: Release source branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check source branch
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [ "$HEAD_REF" = "develop" ] || [[ "$HEAD_REF" == hotfix/* ]]; then
+            echo "Source branch '$HEAD_REF' is allowed to target main."
+          else
+            echo "::error::Pull requests to main must come from develop or hotfix/*, not '$HEAD_REF'."
+            exit 1
+          fi
