@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.marcospolo.watchly.ui.navigation.WatchlyNavHost
-import com.marcospolo.watchly.ui.theme.WatchlyTheme
+import com.marcospolo.watchly.presentation.navigation.WatchlyNavHost
+import com.marcospolo.watchly.presentation.theme.WatchlyTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

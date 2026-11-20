@@ -1,6 +1,6 @@
 # 0001. Módulos `:domain` y `:data` en Kotlin puro, ensamblados en `:app`
 
-- **Estado:** aceptada
+- **Estado:** aceptada; la presentación pasó a su propio módulo en el [ADR 0006](0006-modulo-presentation.md)
 - **Fecha:** 2026-11
 
 ## Contexto
